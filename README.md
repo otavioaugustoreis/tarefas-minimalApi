@@ -1,7 +1,7 @@
 # Tarefas-MinimalApi
 
 ![MinimalAPI](https://img.shields.io/badge/.NET-8.0-blue.svg)  
-Projeto que implementa uma **Minimal API** em .NET 7, voltada para a gestão de tarefas. O objetivo é demonstrar como criar uma API leve, simples e de alto desempenho com poucos arquivos e configuração.
+Projeto que implementa uma **Minimal API** em .NET 8, voltada para a gestão de tarefas. O objetivo é demonstrar como criar uma API leve, simples e de alto desempenho com poucos arquivos e configuração.
 
 ---
 
