@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using MinimalApiTarefas.Data;
 using MinimalApiTarefas.Entities;
@@ -38,9 +39,45 @@ app.MapGet("frases", async  () =>
 });
 
 
-app.MapGet($"/{nameof(TarefaEntity)}", async (AppDbConte) =>
+app.MapGet("/TarefaEntity", async (AppDbContext db) =>
 {
-    return await new HttpClient().GetStringAsync("https://ron-swanson-quotes.herokuapp.com/v2/quotes");
+    return await db.Tarefas.ToListAsync();
+});
+
+app.MapGet("/TarefaEntity/{id}", async (int id, AppDbContext db) =>
+{
+    return await db.Tarefas.FindAsync(id) is TarefaEntity tarefa ? Results.Ok(tarefa) : Results.NotFound();
+});
+
+app.MapGet("/TarefaEntity/concluidas", async (int id, AppDbContext db) =>
+    await db.Tarefas.Where(c => c.IsConcluida == true).ToListAsync();
+
+app.MapPost($"/{nameof(TarefaEntity)}", async (TarefaEntity tarefa, AppDbContext db) =>
+{
+    db.Add(tarefa);
+    await db.SaveChangesAsync();
+    return Results.Created($"/{nameof(TarefaEntity)}/{tarefa.Id}", tarefa);
+});
+
+app.MapPost($"/{nameof(TarefaEntity)}", async (TarefaEntity tarefa, AppDbContext db) =>
+{
+    db.Add(tarefa);
+    await db.SaveChangesAsync();
+    return Results.Created($"/{nameof(TarefaEntity)}/{tarefa.Id}", tarefa);
+});
+
+app.MapPut("/TarefasEntity/{id:int}", async (int id, TarefaEntity inputTarefa, AppDbContext db) =>
+{
+    TarefaEntity tarefa = await db.Tarefas.FindAsync(id);
+
+    if (tarefa is null) return Results.NotFound();
+
+    tarefa.Nome = inputTarefa.Nome;
+    tarefa.IsConcluida = inputTarefa.IsConcluida;
+
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
 });
 
 app.Run();
