@@ -14,8 +14,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("TarefasDb");
 });
 
-
-
 var app = builder.Build();
 
 
@@ -28,17 +26,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", () =>
-{
-    return "Olá mundo";
-});
-
-app.MapGet("frases", async  () =>
-{
-    return await new HttpClient().GetStringAsync("https://ron-swanson-quotes.herokuapp.com/v2/quotes");
-});
-
-
 app.MapGet("/TarefaEntity", async (AppDbContext db) =>
 {
     return await db.Tarefas.ToListAsync();
@@ -49,8 +36,8 @@ app.MapGet("/TarefaEntity/{id}", async (int id, AppDbContext db) =>
     return await db.Tarefas.FindAsync(id) is TarefaEntity tarefa ? Results.Ok(tarefa) : Results.NotFound();
 });
 
-app.MapGet("/TarefaEntity/concluidas", async (int id, AppDbContext db) =>
-    await db.Tarefas.Where(c => c.IsConcluida == true).ToListAsync();
+app.MapGet("/TarefaEntity/concluidas", async (AppDbContext db) =>
+    await db.Tarefas.Where(c => c.IsConcluida == true).ToListAsync());
 
 app.MapPost($"/{nameof(TarefaEntity)}", async (TarefaEntity tarefa, AppDbContext db) =>
 {
@@ -58,13 +45,7 @@ app.MapPost($"/{nameof(TarefaEntity)}", async (TarefaEntity tarefa, AppDbContext
     await db.SaveChangesAsync();
     return Results.Created($"/{nameof(TarefaEntity)}/{tarefa.Id}", tarefa);
 });
-
-app.MapPost($"/{nameof(TarefaEntity)}", async (TarefaEntity tarefa, AppDbContext db) =>
-{
-    db.Add(tarefa);
-    await db.SaveChangesAsync();
-    return Results.Created($"/{nameof(TarefaEntity)}/{tarefa.Id}", tarefa);
-});
+ 
 
 app.MapPut("/TarefasEntity/{id:int}", async (int id, TarefaEntity inputTarefa, AppDbContext db) =>
 {
@@ -78,6 +59,18 @@ app.MapPut("/TarefasEntity/{id:int}", async (int id, TarefaEntity inputTarefa, A
     await db.SaveChangesAsync();
 
     return Results.NoContent();
+});
+
+app.MapDelete("/TarefasEntity/{id:int}", async (int id, AppDbContext db) =>
+{
+    TarefaEntity tarefa = await db.Tarefas.FindAsync(id);
+
+    if (tarefa is null) return Results.NotFound();
+
+    db.Remove(tarefa);
+    await db.SaveChangesAsync();
+
+    return Results.Ok();
 });
 
 app.Run();
